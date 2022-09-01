@@ -1,4 +1,9 @@
 
 export default interface Options {
-  event: Boolean
+  event: boolean,
+  appCode: string,
+  reportURL: string,
+
+  appName?: string,
+  reporterVersion: string,
 }
