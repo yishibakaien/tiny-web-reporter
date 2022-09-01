@@ -1,9 +1,6 @@
 
-export default class Store<T = any> {
-  value: any[]
-  constructor(initValue: T) {
-    this.push(initValue)
-  }
+class Store<T = any> {
+  value: any[] = []
 
   push(data: T): void {
     this.value.push(data)
@@ -17,3 +14,5 @@ export default class Store<T = any> {
     this.value = []
   }
 }
+
+export default new Store()
