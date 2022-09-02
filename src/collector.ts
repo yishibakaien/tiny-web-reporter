@@ -1,8 +1,11 @@
 
 import store from './store'
-import { ExtraMsg, Msg } from './interface/Typings'
+import { addExtraInfo } from './utils'
+import { Msg, RecordType } from './interface/Typings'
 
-export const saveData = (data: Msg): Msg[] | undefined => {
+export const dispatch = (data: Msg, type: RecordType): Msg[] | undefined => {
+
+  addExtraInfo(data, type)
 
   store.push(data)
 

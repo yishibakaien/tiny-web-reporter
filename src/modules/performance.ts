@@ -1,51 +1,32 @@
-// 监听用户浏览器信息
 
-import { Performance } from '../interface/Typings'
+import { dispatch } from '../collector'
 
-import { saveData } from '../collector'
+const performance = (): PerformanceNavigationTiming => {
 
-const performance = (): Performance => {
-  let timing: PerformanceTiming | PerformanceNavigationTiming =
-    window.performance.timing;
+  const timing = window.performance.getEntriesByType('navigation')[0].toJSON()
 
-  if (typeof window.PerformanceNavigationTiming === 'function') {
-    try {
-      const nt2Timing = window.performance.getEntriesByType(
-        'navigation'
-      )[0] as PerformanceNavigationTiming
-
-      if (nt2Timing) {
-        timing = nt2Timing
-      }
-    } catch (error) {} // eslint-disable-line
+  /**
+   * domInteractive, // 页面可交互
+   * domComplete, // DOM 加载完成
+   * duration, // 页面加载完成
+   * loadEventStart, // 文档开始加载
+   * loadEventEnd, // 文档加载完毕
+   * requestStart, // 第一个请求发起
+   * responseStart, // 第一个字节响应
+   */
+  for (let key in timing) {
+    if (typeof timing[key] === 'number') {
+      timing[key] = Math.ceil(timing[key])
+    }
   }
 
-  return {
-    type: 'performance',
-    // dns查询时间
-    dns: timing.domainLookupEnd - timing.domainLookupStart,
-    // tcp连接耗时
-    tcp: timing.connectEnd - timing.connectStart,
-    // 读取页面第一个字节的时间
-    ttfb: timing.responseStart - timing.fetchStart,
-    // 白屏时间
-    bt: timing.domInteractive - timing.fetchStart,
-    // 解析dom树耗时
-    dt: timing.domComplete - timing.domInteractive,
-    // dom完成时间
-    drt: timing.domContentLoadedEventEnd - timing.fetchStart,
-    // request请求耗时
-    rt: timing.responseEnd - timing.responseStart,
-    lt: timing.loadEventEnd - timing.fetchStart,
-    //跳转方式
-    nv: window.performance.navigation.type,
-  }
+  return timing
 }
 
-//一定时间后开始监听performance
-const _listenerPerformance = () =>
-  setTimeout(() => saveData(performance()), 300)
+// load 后延时收集
+const task = () => 
+  setTimeout(() => dispatch(performance(), 'performance'), 300)
 
-export default function listenerPerformance() {
-  window.addEventListener('load', _listenerPerformance, false)
+export default () => {
+  window.addEventListener('load', task, false)
 }

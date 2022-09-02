@@ -1,3 +1,4 @@
+import { RecordType } from './interface/Typings'
 
 // 生成 uuid
 export const uuid = (): String => {
@@ -10,3 +11,14 @@ export const uuid = (): String => {
 
 export const isNodeElement = (target?: any) => target.nodeType === 1
 
+export const addExtraInfo = (obj: any, recordType: RecordType): void => {
+  if (!obj.recordType) {
+    obj.recordType = recordType
+  }
+  if (!obj.uuid) {
+    obj.uuid = uuid()
+  }
+  if (!obj.recordTime) {
+    obj.recordTime = +new Date()
+  }
+}

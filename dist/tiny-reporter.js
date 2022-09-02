@@ -21,7 +21,28 @@
   }());
   var store = new Store();
 
-  var saveData = function (data) {
+  // 生成 uuid
+  var uuid = function () {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+          var r = (Math.random() * 16) >>> 0;
+          var v = c === 'x' ? r : (r & 0x3) >>> 0x8;
+          return v.toString(16);
+      });
+  };
+  var addExtraInfo = function (obj, recordType) {
+      if (!obj.recordType) {
+          obj.recordType = recordType;
+      }
+      if (!obj.uuid) {
+          obj.uuid = uuid();
+      }
+      if (!obj.recordTime) {
+          obj.recordTime = +new Date();
+      }
+  };
+
+  var dispatch = function (data, type) {
+      addExtraInfo(data, type);
       store.push(data);
       var value = store.value;
       // 是否需要发送数据
@@ -30,52 +51,67 @@
       }
   };
 
-  // 监听用户浏览器信息
   var performance = function () {
-      var timing = window.performance.timing;
-      if (typeof window.PerformanceNavigationTiming === 'function') {
-          try {
-              var nt2Timing = window.performance.getEntriesByType('navigation')[0];
-              if (nt2Timing) {
-                  timing = nt2Timing;
-              }
+      var timing = window.performance.getEntriesByType('navigation')[0].toJSON();
+      /**
+       * domInteractive, // 页面可交互
+       * domComplete, // DOM 加载完成
+       * duration, // 页面加载完成
+       * loadEventStart, // 文档开始加载
+       * loadEventEnd, // 文档加载完毕
+       * requestStart, // 第一个请求发起
+       * responseStart, // 第一个字节响应
+       */
+      for (var key in timing) {
+          if (typeof timing[key] === 'number') {
+              timing[key] = Math.ceil(timing[key]);
           }
-          catch (error) { } // eslint-disable-line
       }
-      return {
-          type: 'performance',
-          // dns查询时间
-          dns: timing.domainLookupEnd - timing.domainLookupStart,
-          // tcp连接耗时
-          tcp: timing.connectEnd - timing.connectStart,
-          // 读取页面第一个字节的时间
-          ttfb: timing.responseStart - timing.fetchStart,
-          // 白屏时间
-          bt: timing.domInteractive - timing.fetchStart,
-          // 解析dom树耗时
-          dt: timing.domComplete - timing.domInteractive,
-          // dom完成时间
-          drt: timing.domContentLoadedEventEnd - timing.fetchStart,
-          // request请求耗时
-          rt: timing.responseEnd - timing.responseStart,
-          lt: timing.loadEventEnd - timing.fetchStart,
-          //跳转方式
-          nv: window.performance.navigation.type,
+      return timing;
+  };
+  // load 后延时收集
+  var task = function () {
+      return setTimeout(function () { return dispatch(performance(), 'performance'); }, 300);
+  };
+  var performance$1 = (function () {
+      window.addEventListener('load', task, false);
+  });
+
+  function device() {
+      var screen = window.screen;
+      var _a = document.documentElement, clientWidth = _a.clientWidth, clientHeight = _a.clientHeight;
+      var width = screen.width, height = screen.height, colorDepth = screen.colorDepth, pixelDepth = screen.pixelDepth;
+      var map = {
+          clientHeight: clientHeight,
+          clientWidth: clientWidth,
+          colorDepth: colorDepth,
+          pixelDepth: pixelDepth,
+          screenWidth: width,
+          screenHeight: height,
+          language: navigator.language,
+          userAgent: navigator.userAgent,
+          vendor: navigator.vendor,
+          platform: navigator.platform, // 浏览器平台的环境,不是电脑系统的x64这样的(浏览器平台的环境可能是x32)
       };
-  };
-  //一定时间后开始监听performance
-  var _listenerPerformance = function () {
-      return setTimeout(function () { return saveData(performance()); }, 300);
-  };
-  function listenerPerformance() {
-      window.addEventListener('load', _listenerPerformance, false);
+      // 这里简单判断是否是对象即可
+      // if (typeof connection === 'object') {
+      //   map.downlink = connection.downlink
+      //   map.effectiveType = connection.effectiveType
+      //   map.rtt = connection.rtt
+      // }
+      return map;
   }
+  var device$1 = (function () {
+      dispatch(device(), 'device');
+  });
 
   function reporter (url) {
       document.addEventListener('visibilitychange', function () {
-          var params = JSON.stringify({ data: store.value });
           if (document.visibilityState === 'hidden') {
-              console.log('123', params);
+              if (!store.value.length)
+                  return;
+              var params = JSON.stringify(store.value);
+              console.log('1234', params);
               navigator.sendBeacon(url, params);
               store.clear();
           }
@@ -83,7 +119,7 @@
   }
 
   function index (options) {
-      var key = options.key, url = options.url, isPerformance = options.isPerformance;
+      var key = options.key, url = options.url, _a = options.isPerformance, isPerformance = _a === void 0 ? true : _a, _b = options.isDevice, isDevice = _b === void 0 ? true : _b;
       if (!key) {
           throw new Error('params error: `key` is required');
       }
@@ -91,8 +127,11 @@
           throw new Error('params error: `url` is required');
       }
       reporter(url);
+      if (isDevice) {
+          device$1();
+      }
       if (isPerformance) {
-          listenerPerformance();
+          performance$1();
       }
   }
 
