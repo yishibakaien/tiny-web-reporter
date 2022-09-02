@@ -1,11 +1,13 @@
 
-const sendBeacon = navigator.sendBeacon
+import  store from './store'
 
-const reporter = sendBeacon
-? (url: string, data: any) => sendBeacon(url, JSON.stringify(data || {}))
-: (url: string, data: any) => {
-    const beacon = new Image()
-    beacon.src = `${url}?v=${encodeURIComponent(JSON.stringify(data))}`
-  }
-
-export default reporter
+export default function(url: string): void {
+  document.addEventListener('visibilitychange', () => {
+    const params = JSON.stringify({ data: store.value })
+    if (document.visibilityState === 'hidden') {
+      console.log('123', params)
+      navigator.sendBeacon(url, params )
+      store.clear()
+    }
+  })
+}

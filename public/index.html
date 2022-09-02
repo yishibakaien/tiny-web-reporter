@@ -36,7 +36,11 @@
 
   <script src="/dist/tiny-reporter.js"></script>
   <script>
-    tReporter()
+    tReporter({
+      url: 'https://api.touchfish.tech/report',
+      key: 'myApp',
+      isPerformance: true
+    })
 
   </script>
 </body>

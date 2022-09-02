@@ -113,33 +113,35 @@ export type Msg = BaseMsg | ExtraMsg | Performance
   
 export interface Options {
   /* 上报项目key值 */
-  appCode: string;
+  key: string
+
   /* 上报地址 */
-  url: string;
+  url: string
+  
   /* 需要收集的字段key值 */
-  gatherKeys?: (keyof BaseMsg)[];
+  gatherKeys?: (keyof BaseMsg)[]
   /* 上报频率默认10条 */
-  frequency?: number;
+  frequency?: number
   /* 是否不上报数量不足的记录 */
-  isDiscard?: boolean;
+  isDiscard?: boolean
   /* 是否监听路由信息 */
-  isRoutes?: boolean;
+  isRoutes?: boolean
   /* 是否监听浏览器性能信息 */
-  isPerformance?: boolean;
+  isPerformance?: boolean
   /* 是否监听promise错误 */
-  isPromiseError?: boolean;
+  isPromiseError?: boolean
   /* 是否监听页面资源错误 */
-  isResourceError?: boolean;
+  isResourceError?: boolean
   /* 是否监听接口请求信息 */
-  isRequest?: boolean;
+  isRequest?: boolean
   /* 脚本初始化之前运行 */
-  beforeInit?: () => void;
+  beforeInit?: () => void
   /* 返回的值会被合并到每一条上报数据中, 可以用于从接口中读取用户信息 */
-  mergeMsg?: () => Record<string, any> | Promise<Record<string, any>>;
+  mergeMsg?: () => Record<string, any> | Promise<Record<string, any>>
   /* 上报数据之前，可以在此对数据进行加工 */
-  beforeSendMsg?: (data: ExtraMsg & BaseMsg) => ExtraMsg & BaseMsg;
+  beforeSendMsg?: (data: ExtraMsg & BaseMsg) => ExtraMsg & BaseMsg
   /* 是否需要打印日志 */
-  isLog?: boolean;
+  isLog?: boolean
   /* 上报请求头, 页面卸载上报的时候无法设置请求头，可能会导致部分数据丢失 */
-  headers?: Record<string, any>;
+  headers?: Record<string, any>
 }

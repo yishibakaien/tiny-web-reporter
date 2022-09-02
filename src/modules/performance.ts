@@ -12,9 +12,10 @@ const performance = (): Performance => {
     try {
       const nt2Timing = window.performance.getEntriesByType(
         'navigation'
-      )[0] as PerformanceNavigationTiming;
+      )[0] as PerformanceNavigationTiming
+
       if (nt2Timing) {
-        timing = nt2Timing;
+        timing = nt2Timing
       }
     } catch (error) {} // eslint-disable-line
   }
@@ -38,13 +39,13 @@ const performance = (): Performance => {
     lt: timing.loadEventEnd - timing.fetchStart,
     //跳转方式
     nv: window.performance.navigation.type,
-  };
-};
+  }
+}
 
 //一定时间后开始监听performance
 const _listenerPerformance = () =>
-  setTimeout(() => saveData(performance()), 300);
+  setTimeout(() => saveData(performance()), 300)
 
 export default function listenerPerformance() {
-  window.addEventListener('load', _listenerPerformance, false);
+  window.addEventListener('load', _listenerPerformance, false)
 }

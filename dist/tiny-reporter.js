@@ -71,9 +71,29 @@
       window.addEventListener('load', _listenerPerformance, false);
   }
 
+  function reporter (url) {
+      document.addEventListener('visibilitychange', function () {
+          var params = JSON.stringify({ data: store.value });
+          if (document.visibilityState === 'hidden') {
+              console.log('123', params);
+              navigator.sendBeacon(url, params);
+              store.clear();
+          }
+      });
+  }
+
   function index (options) {
-      console.log(store);
-      listenerPerformance();
+      var key = options.key, url = options.url, isPerformance = options.isPerformance;
+      if (!key) {
+          throw new Error('params error: `key` is required');
+      }
+      if (!url) {
+          throw new Error('params error: `url` is required');
+      }
+      reporter(url);
+      if (isPerformance) {
+          listenerPerformance();
+      }
   }
 
   return index;
